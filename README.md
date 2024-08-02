@@ -17,16 +17,22 @@ All code to be run on Google Colab, with Drive locations mentioned as where Driv
 
 [1]
 I. Pilán, P. Lison, L. Øvrelid, A. Papadopoulou, D. Sánchez, and M. Batet, “The Text Anonymization Benchmark (TAB): A dedicated corpus and evaluation framework for text anonymization,” Comput. Linguist. Assoc. Comput. Linguist., vol. 48, no. 4, pp. 1053–1101, 2022.
+
 [2]
 E. Eder, U. Krieg-Holz, and U. Hahn, “CodE Alltag 2.0 --- A Pseudonymized German-Language Email Corpus,” in Proceedings of the Twelfth Language Resources and Evaluation Conference, 2020, pp. 4466–4477.
+
 [3]
 M. Friedrich, A. Köhn, G. Wiedemann, and C. Biemann, “Adversarial learning of privacy-preserving text representations for DE-identification of medical records,” in Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics, 2019, pp. 5829–5839.
+
 [4]
 “Freedom of information act electronic reading room,” Cia.gov. [Online]. Available: https://www.cia.gov/readingroom/.
+
 [5]
 The 9/11 Commission Report, https://www.9-11commission.gov/report/911Report.pdf
+
 [6]
 “Pdf2image,” PyPI. [Online]. Available: https://pypi.org/project/pdf2image/. 
+
 [7]
 “Pytesseract,” PyPI. [Online]. Available: https://pypi.org/project/pytesseract/. 
 
