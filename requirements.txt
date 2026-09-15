@@ -1,0 +1,16 @@
+# Core
+torch>=2.0
+transformers[torch]>=4.35
+datasets>=2.14
+numpy>=1.24
+pandas>=2.0
+matplotlib>=3.7
+
+# PDF -> image -> text pipeline (data_processing.py)
+pdf2image>=1.16
+pytesseract>=0.3.10
+Pillow>=10.0
+
+# System packages required by the two above (install separately):
+#   Debian/Ubuntu:  sudo apt-get install poppler-utils tesseract-ocr
+#   macOS (brew):   brew install poppler tesseract

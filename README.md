@@ -1,45 +1,85 @@
-# ECE1786
-Repository for ECE1786 Course Project (Fall 2023).
+# RedactedGPT
 
-The final presentation for this project can be found here: https://docs.google.com/presentation/d/1RQ0xDc4as7fq5tDBYuLwA_7QouyAC9TLtLHVCYxo0aY/edit?usp=sharing
+Can a language model guess what's under the black bars? This project fine-tunes **BERT**,
+**DeBERTa**, and **GPT-2** to predict redacted words in declassified CIA documents, and compares
+how the three architectures handle the task.
 
-See BERTModel.ipynb, GPTModel.ipynb, and deBERTA.ipynb for training code with each of the three models we compared.
+## Results
 
-Achieved 93% accuracy guessing words in declassified CIA documents using bert-base-cased from Huggingface. We compare to deberta-base and gpt2, highlighting the advantage of bidirectional models and model size with respect to training data and context for predictions. 
+Best validation **top-10 accuracy** — the redacted word appears in the model's ten highest-ranked
+predictions — after fine-tuning on masked tokens drawn from the document corpus.
 
-This project is an example of mixed fine-tuning and training from scratch, as many of the words in the documents were not represented in the stock huggingface models. We show that with enough training time, it is possible for a model to learn a new context for existing tokens and accurately train new embeddings at the same time. 
+| Model | Checkpoint | Best top-10 accuracy |
+|-------|-----------|---------------------:|
+| **BERT** | `bert-base-cased` | **93.9%** |
+| DeBERTa | `microsoft/deberta-base` | 90.8% |
+| GPT-2 | `gpt2` | 67.7% |
 
-We demonstrate that with enough context, LLMs could guess valuable redacted information from government documents. The study of safeguarding redacted documents from such tactics is an ongoing field of study which complements this work. See [1], [2] and [3] for some examples. 
+**Why BERT wins.** Predicting a hidden word from text on *both* sides of it is exactly the masked
+language modelling objective BERT was pretrained on. GPT-2 is autoregressive — it only sees
+preceding context — so it is solving a harder version of the problem with less information, and the
+gap of roughly 26 points reflects that mismatch rather than a difference in model quality.
 
-Data processing was done largely manually in data_processing.ipynb as many of the scanned or photocopied documents also had unpredictable errors and illegible handwriting. View the complete set of documents used for training by following the links in [4] and [5]. We used Pdf2image [6] and Pytesseract [7] for automatic conversion of the PDF files to text data for us to process.
+Loss and accuracy curves for all three models are produced by `src/plot_results.py`.
 
-All code to be run on Google Colab, with Drive locations mentioned as where Drive is mounted. Not included here is the official 9/11 commission report used for background training of the models. It can be found at https://www.9-11commission.gov/report/911Report.pdf. 
+## How it works
 
-[1]
-I. Pilán, P. Lison, L. Øvrelid, A. Papadopoulou, D. Sánchez, and M. Batet, “The Text Anonymization Benchmark (TAB): A dedicated corpus and evaluation framework for text anonymization,” Comput. Linguist. Assoc. Comput. Linguist., vol. 48, no. 4, pp. 1053–1101, 2022.
+1. **`src/data_processing.py`** — converts source PDFs to page images, OCRs them with Tesseract,
+   cleans the extracted text, and builds masked-token training CSVs. Redaction markers in the
+   original documents become the prediction targets.
+2. **`src/train_bert.py`**, **`train_deberta.py`**, **`train_gpt2.py`** — fine-tune each model on
+   those CSVs via the HuggingFace `Trainer`, logging validation loss and top-10 accuracy.
+3. **`src/plot_results.py`** — renders the training curves used above.
 
-[2]
-E. Eder, U. Krieg-Holz, and U. Hahn, “CodE Alltag 2.0 --- A Pseudonymized German-Language Email Corpus,” in Proceedings of the Twelfth Language Resources and Evaluation Conference, 2020, pp. 4466–4477.
+## Setup
 
-[3]
-M. Friedrich, A. Köhn, G. Wiedemann, and C. Biemann, “Adversarial learning of privacy-preserving text representations for DE-identification of medical records,” in Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics, 2019, pp. 5829–5839.
+System dependencies for the OCR pipeline:
 
-[4]
-“Freedom of information act electronic reading room,” Cia.gov. [Online]. Available: https://www.cia.gov/readingroom/.
+```bash
+# Debian / Ubuntu
+sudo apt-get install poppler-utils tesseract-ocr
+# macOS
+brew install poppler tesseract
+```
 
-[5]
-The 9/11 Commission Report, https://www.9-11commission.gov/report/911Report.pdf
+Python dependencies:
 
-[6]
-“Pdf2image,” PyPI. [Online]. Available: https://pypi.org/project/pdf2image/. 
+```bash
+pip install -r requirements.txt
+```
 
-[7]
-“Pytesseract,” PyPI. [Online]. Available: https://pypi.org/project/pytesseract/. 
+## Running
 
+All paths resolve from `config.py`, which defaults to `./data`. Override it if your corpus lives
+elsewhere:
 
+```bash
+export REDACTEDGPT_DATA=/path/to/data
+```
 
+Then:
 
+```bash
+python src/data_processing.py     # PDFs -> OCR text -> training CSVs
+python src/train_bert.py          # fine-tune BERT
+python src/train_deberta.py       # fine-tune DeBERTa
+python src/train_gpt2.py          # fine-tune GPT-2
+python src/plot_results.py        # training curves
+```
 
+Training was run on GPU; the fine-tuning scripts are impractical on CPU.
 
+## Data
 
- 
+Five sample declassified CIA documents are included in `data/PDFs/` so the pipeline can be run end
+to end. The full training corpus — a larger set from the
+[CIA FOIA Reading Room](https://www.cia.gov/readingroom/) plus page images of the 9/11 Commission
+Report — is not in the repo for size reasons. See [`data/README.md`](data/README.md).
+
+Model checkpoints and generated intermediates are gitignored.
+
+## Notes
+
+Developed as a course project for ECE1786 (Creative Applications of Natural Language Processing),
+University of Toronto, Fall 2023. Originally written as Colab notebooks and since converted to
+standalone scripts.
